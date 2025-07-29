@@ -33,7 +33,7 @@ help:
 .PHONY: init
 init:
 	rm -rf windmill_src
-	git -c advice.detachedHead=False clone -b v1.394.4 https://github.com/windmill-labs/windmill.git windmill_src
+git -c advice.detachedHead=False clone -b v1.514.1 https://github.com/windmill-labs/windmill.git windmill_src
 	cp Dockerfile requirements.txt windmill_src/
 
 	cp -r ex_app windmill_src/

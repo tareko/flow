@@ -43,7 +43,7 @@ init:
 static_frontend:
 	rm -rf static_frontend
 	pushd windmill_src && \
-	DOCKER_BUILDKIT=1 docker buildx build \
+	DOCKER_BUILDKIT=1 docker buildx build --network=host\
 		--build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow \
 		--platform linux/amd64 \
 		--target export_frontend \

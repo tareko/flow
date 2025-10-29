@@ -16,7 +16,7 @@ from pathlib import Path
 from time import sleep
 
 import httpx
-from fastapi import BackgroundTasks, Depends, FastAPI, Request, responses
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, responses
 from nc_py_api import NextcloudApp, NextcloudException
 from nc_py_api.ex_app import (
     nc_app,
@@ -26,6 +26,12 @@ from nc_py_api.ex_app import (
 )
 from nc_py_api.ex_app.integration_fastapi import AppAPIAuthMiddleware, fetch_models_task
 from starlette.responses import FileResponse, Response
+
+from scheduling_poll import (
+    PollNormalizationResponse,
+    PollSelection,
+    normalize_selection,
+)
 
 # ---------Start of configuration values for manual deploy---------
 
@@ -232,6 +238,19 @@ async def init_callback(b_tasks: BackgroundTasks, nc: typing.Annotated[Nextcloud
 @APP.put("/enabled")
 def enabled_callback(enabled: bool, nc: typing.Annotated[NextcloudApp, Depends(nc_app)]):
     return responses.JSONResponse(content={"error": enabled_handler(enabled, nc)})
+
+
+@APP.post(
+    "/calendar/scheduling/poll/normalize",
+    response_model=PollNormalizationResponse,
+)
+async def normalize_scheduling_poll(selection: PollSelection) -> PollNormalizationResponse:
+    """Normalize scheduling poll selections to consistent timezone aware values."""
+
+    try:
+        return normalize_selection(selection)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 async def proxy_request_to_windmill(request: Request, path: str, path_prefix: str = ""):
